@@ -1,0 +1,2 @@
+recursive-include web-ssh-proxy/templates *
+recursive-include web-ssh-proxy/static *
