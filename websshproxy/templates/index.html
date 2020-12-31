@@ -1,8 +1,55 @@
-<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.min.js"></script>
-<script type="text/javascript" charset="utf-8">
-    var socket = io();
-    socket.on('connect', function() {
-        socket.emit('my event', {data: 'I\'m connected!'});
+<html>
+<head>
+    <title>web-ssh-proxy</title>
+    <script src="//code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.min.js"></script>
+    <!-- xterm.js -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.css" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/addons/attach/attach.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/addons/fit/fit.min.js"></script>
+    <script>
+$(function(){
+    Terminal.applyAddon(fit);
+    var term = new Terminal({
+        cursorBlink: true,
+        macOptionIsMeta: true,
+        scrollback: true,
     });
-</script>
-Hello, World!
+    term.open(document.getElementById('terminal'));
+    term.fit();
+
+    var socket = io();
+    socket.on('ssh-status', function(json) {
+        $("#status").text(json);
+    });
+    $("#ssh-connect").click(function(){
+        $("#status").text('connecting...');
+        var hostname = $("#hostname").val()
+        var port = parseInt($("#port").val())
+        var username = $("#username").val()
+        var password = $("#password").val()
+        socket.emit('ssh-connect', {hostname: hostname, port: port, 'username': username, 'password': password});
+    });
+    term.on('key', (key, ev) => {
+        room = socket.sid
+        socket.emit("ssh-input", key)
+    });
+    socket.on("ssh-output", function(data){
+        term.write(data)
+    })
+
+});
+    </script>
+</head>
+<body>
+    <form>
+        <input type="text" id="username" value="">@<input type="text" id="hostname" value="">
+        Password: <input type="password" id="password" value="">
+        Port: <input type="text" id="port" value="22">
+        <input type="button" id="ssh-connect" value="connect">
+    </form>
+    status: <span id="status"></span>
+    <div style="width: 100%; height: calc(100% - 50px);" id="terminal"></div>
+</body>
+</html>
