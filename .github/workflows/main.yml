@@ -1,0 +1,24 @@
+name: main
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: python
+    steps:
+      - uses: actions/checkout@v2
+      - run: pip install tox
+      - run: tox --notest
+      - run: tox -e py36
+      - run: tox -e py37
+      - run: tox -e py38
+      - run: tox -e py39
+
+  lint:
+    runs-on: ubuntu-latest
+    container: python
+    steps:
+      - uses: actions/checkout@v2
+      - run: pip install tox
+      - run: tox --notest
+      - run: tox -e flake8
